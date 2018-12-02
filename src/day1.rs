@@ -9,6 +9,21 @@ pub fn part1_chars(input: &str) -> i32 {
   })
 }
 
+#[aoc(day1, part2, inline)]
+pub fn part2_chars(input: &str) -> i32 {
+  let nums: Vec<i32> = input.lines().map(|l| l.parse::<i32>().unwrap()).collect();
+  let mut state = State::new();
+  loop {
+    let res = part2_process_once(&nums, &mut state);
+    match res {
+      Some(n) => {
+        return n;
+      }
+      _ => (),
+    }
+  }
+}
+
 #[aoc_generator(day1)]
 pub fn number_generator(input: &str) -> Vec<i32> {
   input
@@ -95,21 +110,33 @@ mod tests {
 
   #[test]
   fn part2_example1() {
-    assert_eq!(part2(&[1, -1]), 0)
+    let input = "+1\n-1";
+    let output = 0;
+    assert_eq!(part2(&number_generator(input)), output);
+    assert_eq!(part2_chars(&input), output);
   }
 
   #[test]
   fn part2_example2() {
-    assert_eq!(part2(&[3, 3, 4, -2, -4]), 10)
+    let input = "+3\n+3\n+4\n-2\n-4";
+    let output = 10;
+    assert_eq!(part2(&number_generator(input)), output);
+    assert_eq!(part2_chars(&input), output);
   }
 
   #[test]
   fn part2_example3() {
-    assert_eq!(part2(&[-6, 3, 8, 5, -6]), 5)
+    let input = "-6\n+3\n+8\n+5\n-6";
+    let output = 5;
+    assert_eq!(part2(&&number_generator(input)), output);
+    assert_eq!(part2_chars(&input), output);
   }
 
   #[test]
   fn part2_example4() {
-    assert_eq!(part2(&[7, 7, -2, -7, -4]), 14)
+    let input = "+7\n+7\n-2\n-7\n-4";
+    let output = 14;
+    assert_eq!(part2(&number_generator(input)), output);
+    assert_eq!(part2_chars(&input), output);
   }
 }
