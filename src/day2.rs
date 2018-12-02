@@ -38,12 +38,28 @@ pub fn part1_checksum(input: &[String]) -> i32 {
   doubles * triples
 }
 
+pub fn part2_char_difference(one: &str, two: &str) -> i32 {
+  let one_b = one.as_bytes();
+  let two_b = two.as_bytes();
+  let mut count = 0;
+  for i in 0..one.len() {
+    if one_b[i] != two_b[i] {
+      count += 1;
+    }
+  }
+  count
+}
+
+#[aoc(day2, part2)]
+pub fn part2_char_difference_closest_strings(input: &[String]) -> String {
+  String::from("")
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
 
   /*
-
     abcdef contains no letters that appear exactly two or three times.
     bababc contains two a and three b, so it counts for both.
     abbcde contains two b, but no letter appears exactly three times.
@@ -51,7 +67,6 @@ mod tests {
     aabcdd contains two a and two d, but it only counts once.
     abcdee contains two e.
     ababab contains three a and three b, but it only counts once.
-
   */
 
   #[test]
@@ -108,5 +123,41 @@ mod tests {
     let input = "abcdef\nbababc\nabbcde\nabcccd\naabcdd\nabcdee\nababab";
     let output = 12;
     assert_eq!(part1_checksum(&code_generator(&input)), output);
+  }
+
+  /*
+    abcde
+    fghij
+    klmno
+    pqrst
+    fguij
+    axcye
+    wvxyz
+
+    The IDs abcde and axcye are close, but they differ by two characters (the second and fourth). However, the IDs fghij and fguij differ by exactly one character, the third (h and u). Those must be the correct boxes.
+  */
+
+  #[test]
+  fn part2_char_difference_1() {
+    let input1 = "fghij";
+    let input2 = "fguij";
+    assert_eq!(part2_char_difference(input1, input2), 1);
+  }
+
+  #[test]
+  fn part2_char_difference_2() {
+    let input1 = "abcde";
+    let input2 = "axcye";
+    assert_eq!(part2_char_difference(input1, input2), 2);
+  }
+
+  #[test]
+  fn part2_integration() {
+    let input = "abcde\nfghij\nklmno\npqrst\nfguij\naxcye\nwvxyz";
+    let output = "fgij";
+    assert_eq!(
+      part2_char_difference_closest_strings(&code_generator(&input)),
+      String::from(output)
+    );
   }
 }
