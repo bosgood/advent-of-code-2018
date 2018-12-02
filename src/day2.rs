@@ -50,8 +50,28 @@ pub fn part2_char_difference(one: &str, two: &str) -> i32 {
   count
 }
 
+pub fn part2_chars_in_common(one: &str, two: &str) -> String {
+  let one_b = one.as_bytes();
+  let two_b = two.as_bytes();
+  let mut common = String::from("");
+  for i in 0..one.len() {
+    let c = one_b[i];
+    if c == two_b[i] {
+      common.push(char::from(c));
+    }
+  }
+  common
+}
+
 #[aoc(day2, part2)]
 pub fn part2_char_difference_closest_strings(input: &[String]) -> String {
+  for s1 in input {
+    for s2 in input {
+      if part2_char_difference(s1, s2) == 1 {
+        return part2_chars_in_common(s1, s2);
+      }
+    }
+  }
   String::from("")
 }
 
@@ -149,6 +169,13 @@ mod tests {
     let input1 = "abcde";
     let input2 = "axcye";
     assert_eq!(part2_char_difference(input1, input2), 2);
+  }
+
+  #[test]
+  fn part2_chars_in_common_1() {
+    let input1 = "fghij";
+    let input2 = "fguij";
+    assert_eq!(part2_chars_in_common(input1, input2), String::from("fgij"));
   }
 
   #[test]
