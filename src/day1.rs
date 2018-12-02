@@ -108,19 +108,25 @@ impl StateImmutable {
   }
 
   fn update(&self, val: i32) -> Self {
+    let current = self.current + val;
     StateImmutable {
-      seen: self.seen.update(val),
-      current: self.current + val,
+      seen: self.seen.update(current),
+      current: current,
       result: self.result,
     }
   }
 
   fn finish(&self, val: i32) -> Self {
+    let next = self.update(val);
     StateImmutable {
-      seen: self.seen.clone(),
-      current: self.current + val,
-      result: Some(val),
+      seen: next.seen,
+      current: next.current,
+      result: Some(next.current),
     }
+  }
+
+  fn reached_loop(&self, val: i32) -> bool {
+    self.seen.contains(&(self.current + val))
   }
 }
 
@@ -135,12 +141,17 @@ impl Clone for StateImmutable {
 }
 
 fn part2_process_once_immutable(input: &[i32], initial_state: StateImmutable) -> StateImmutable {
-  input.iter().fold(initial_state, |memo, n| {
-    if memo.seen.contains(n) {
-      return memo.finish(*n);
-    }
-    memo.update(*n)
-  })
+  input
+    .iter()
+    .fold(initial_state, |memo, n| match memo.result {
+      Some(_) => memo,
+      None => {
+        if memo.reached_loop(*n) {
+          return memo.finish(*n);
+        }
+        memo.update(*n)
+      }
+    })
 }
 
 #[aoc(day1, part2, immutable)]
@@ -188,7 +199,6 @@ mod tests {
   }
 
   #[test]
-  #[ignore]
   fn part2_example1_immutable() {
     let input = "+1\n-1";
     let output = 0;
@@ -204,7 +214,6 @@ mod tests {
   }
 
   #[test]
-  #[ignore]
   fn part2_example2_immutable() {
     let input = "+3\n+3\n+4\n-2\n-4";
     let output = 10;
@@ -220,7 +229,6 @@ mod tests {
   }
 
   #[test]
-  #[ignore]
   fn part2_example3_immutable() {
     let input = "-6\n+3\n+8\n+5\n-6";
     let output = 5;
@@ -236,7 +244,6 @@ mod tests {
   }
 
   #[test]
-  #[ignore]
   fn part2_example4_immutable() {
     let input = "+7\n+7\n-2\n-7\n-4";
     let output = 14;
