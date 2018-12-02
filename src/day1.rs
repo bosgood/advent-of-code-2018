@@ -1,3 +1,5 @@
+use im::HashSet as ImHashSet;
+use std::clone::Clone;
 use std::collections::HashSet;
 
 #[aoc(day1, part1, Chars)]
@@ -88,6 +90,75 @@ pub fn part2(input: &[i32]) -> i32 {
   }
 }
 
+struct StateImmutable {
+  seen: ImHashSet<i32>,
+  current: i32,
+  result: Option<i32>,
+}
+
+impl StateImmutable {
+  fn new() -> StateImmutable {
+    let current = 0;
+    let seen = ImHashSet::new().update(current);
+    StateImmutable {
+      seen: seen,
+      current: current,
+      result: None,
+    }
+  }
+
+  fn update(&self, val: i32) -> Self {
+    StateImmutable {
+      seen: self.seen.update(val),
+      current: self.current + val,
+      result: self.result,
+    }
+  }
+
+  fn finish(&self, val: i32) -> Self {
+    StateImmutable {
+      seen: self.seen.clone(),
+      current: self.current + val,
+      result: Some(val),
+    }
+  }
+}
+
+impl Clone for StateImmutable {
+  fn clone(&self) -> Self {
+    StateImmutable {
+      seen: self.seen.clone(),
+      current: self.current,
+      result: self.result,
+    }
+  }
+}
+
+fn part2_process_once_immutable(input: &[i32], initial_state: StateImmutable) -> StateImmutable {
+  input.iter().fold(initial_state, |memo, n| {
+    if memo.seen.contains(n) {
+      return memo.finish(*n);
+    }
+    memo.update(*n)
+  })
+}
+
+#[aoc(day1, part2, immutable)]
+pub fn part2_immutable(input: &[i32]) -> i32 {
+  let mut state = StateImmutable::new();
+  loop {
+    let next_state = part2_process_once_immutable(input, state);
+    match next_state.result {
+      Some(n) => {
+        return n;
+      }
+      None => {
+        state = next_state;
+      }
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -117,11 +188,27 @@ mod tests {
   }
 
   #[test]
+  #[ignore]
+  fn part2_example1_immutable() {
+    let input = "+1\n-1";
+    let output = 0;
+    assert_eq!(part2_immutable(&number_generator(input)), output);
+  }
+
+  #[test]
   fn part2_example2() {
     let input = "+3\n+3\n+4\n-2\n-4";
     let output = 10;
     assert_eq!(part2(&number_generator(input)), output);
     assert_eq!(part2_chars(&input), output);
+  }
+
+  #[test]
+  #[ignore]
+  fn part2_example2_immutable() {
+    let input = "+3\n+3\n+4\n-2\n-4";
+    let output = 10;
+    assert_eq!(part2_immutable(&number_generator(input)), output);
   }
 
   #[test]
@@ -133,10 +220,26 @@ mod tests {
   }
 
   #[test]
+  #[ignore]
+  fn part2_example3_immutable() {
+    let input = "-6\n+3\n+8\n+5\n-6";
+    let output = 5;
+    assert_eq!(part2_immutable(&number_generator(input)), output);
+  }
+
+  #[test]
   fn part2_example4() {
     let input = "+7\n+7\n-2\n-7\n-4";
     let output = 14;
     assert_eq!(part2(&number_generator(input)), output);
     assert_eq!(part2_chars(&input), output);
+  }
+
+  #[test]
+  #[ignore]
+  fn part2_example4_immutable() {
+    let input = "+7\n+7\n-2\n-7\n-4";
+    let output = 14;
+    assert_eq!(part2_immutable(&number_generator(input)), output);
   }
 }
