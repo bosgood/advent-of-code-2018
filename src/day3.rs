@@ -50,52 +50,21 @@ impl FabricSquare {
 
   // Determines if this square overlaps with the given square
   pub fn overlaps_with(&self, s: &FabricSquare) -> bool {
-    // let x_range1 = Range {
-    //   start: self.x,
-    //   end: self.x + self.width,
-    // };
-    // let x_range2 = Range {
-    //   start: s.x,
-    //   end: s.x + s.width,
-    // };
-    // let y_range1 = Range {
-    //   start: self.y,
-    //   end: self.y + self.height,
-    // };
-    // let y_range2 = Range {
-    //   start: s.y,
-    //   end: s.y + s.height,
-    // };
+    let ax1 = self.x;
+    let ax2 = self.x + self.width;
+    let bx1 = s.x;
+    let bx2 = s.x + s.width;
+    let ay1 = self.y;
+    let ay2 = self.y + self.width;
+    let by1 = s.y;
+    let by2 = s.y + s.width;
 
-    // let overlaps_x = x_range1.overlaps(&x_range2) || x_range2.overlaps(&x_range1);
-    // let overlaps_y = y_range1.overlaps(&y_range2) || y_range2.overlaps(&y_range1);
-    // overlaps_x && overlaps_y
-
-    // if self.x > s.x || s.x > self.x {
-    //   return false;
-    // }
-    // if self.y < s.y || s.y < self.y {
-    //   return false;
-    // }
-    // true
-
-    self.x < s.x + s.width && self.x + self.width > s.x && self.y > s.y + s.height && self.y < s.y
+    ax1 < bx2 && ax2 > bx1 && ay1 < by2 && ay2 > by1
   }
 
   // Gets the square where this square overlaps with another, if any
   pub fn intersection(&self, square: &FabricSquare) -> Option<FabricSquare> {
     None
-  }
-}
-
-struct Range {
-  start: i32,
-  end: i32,
-}
-
-impl Range {
-  fn overlaps(&self, r: &Range) -> bool {
-    (self.start >= r.start && self.start <= r.end) || (r.start >= self.start && r.start <= self.end)
   }
 }
 
@@ -114,34 +83,6 @@ pub fn day3_part1_find_overlapped_area(input: &[FabricSquare]) -> i32 {
 #[cfg(test)]
 mod tests {
   use super::*;
-
-  #[test]
-  fn range_overlap_test1() {
-    let r1 = Range { start: 0, end: 1 };
-    let r2 = Range { start: 2, end: 3 };
-    assert_eq!(r1.overlaps(&r2), false);
-  }
-
-  #[test]
-  fn range_overlap_test2() {
-    let r1 = Range { start: 2, end: 3 };
-    let r2 = Range { start: 2, end: 3 };
-    assert_eq!(r1.overlaps(&r2), true);
-  }
-
-  #[test]
-  fn range_overlap_test3() {
-    let r1 = Range { start: 0, end: 3 };
-    let r2 = Range { start: 2, end: 3 };
-    assert_eq!(r1.overlaps(&r2), true);
-  }
-
-  #[test]
-  fn range_overlap_test4() {
-    let r1 = Range { start: 0, end: 3 };
-    let r2 = Range { start: 50, end: 60 };
-    assert_eq!(r1.overlaps(&r2), false);
-  }
 
   #[test]
   fn claim_to_fabric_square_test1() {
@@ -254,6 +195,13 @@ mod tests {
       width: 4,
       height: 4,
     };
+    let s2 = FabricSquare {
+      id: 1,
+      x: 3,
+      y: 1,
+      width: 4,
+      height: 4,
+    };
     let s3 = FabricSquare {
       id: 2,
       x: 5,
@@ -262,6 +210,7 @@ mod tests {
       height: 2,
     };
     assert_eq!(s1.overlaps_with(&s3), false);
+    assert_eq!(s2.overlaps_with(&s3), false);
   }
 
   #[test]
