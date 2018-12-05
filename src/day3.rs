@@ -8,10 +8,10 @@ use regex::Regex;
   The width of the rectangle in inches.
   The height of the rectangle in inches.
 */
-// FabricSquare expresses the elf's square of fabric in terms of its cartesian coordinates.
+// FabricPiece expresses the elf's square of fabric in terms of its cartesian coordinates.
 // The origin point (0,0) is the top left point.
 #[derive(PartialEq, Eq, Debug)]
-pub struct FabricSquare {
+pub struct FabricPiece {
   id: i32,
   x: i32,
   y: i32,
@@ -19,7 +19,7 @@ pub struct FabricSquare {
   height: i32,
 }
 
-impl FabricSquare {
+impl FabricPiece {
   // Translates from claims to fabric square representations
   // #123 @ 3,2: 5x4
   pub fn new(claim: &str) -> Self {
@@ -34,7 +34,7 @@ impl FabricSquare {
     let y = cap.name("y").unwrap().as_str().parse::<i32>().unwrap();
     let width = cap.name("width").unwrap().as_str().parse::<i32>().unwrap();
     let height = cap.name("height").unwrap().as_str().parse::<i32>().unwrap();
-    FabricSquare {
+    FabricPiece {
       id: id,
       x: x,
       y: y,
@@ -43,21 +43,21 @@ impl FabricSquare {
     }
   }
 
-  // Calculates the area of this square
+  // Calculates the area of this rectangle
   pub fn area(&self) -> i32 {
     self.width * self.height
   }
 
-  // Determines if this square overlaps with the given square
-  pub fn overlaps_with(&self, s: &FabricSquare) -> bool {
+  // Determines if this rectangle overlaps with the given rectangle
+  pub fn overlaps_with(&self, s: &FabricPiece) -> bool {
     self.x < s.x + s.width
       && self.x + self.width > s.x
       && self.y < s.y + s.width
       && self.y + self.width > s.y
   }
 
-  // Gets the square where this square overlaps with another, if any
-  pub fn intersection(&self, s: &FabricSquare) -> Option<FabricSquare> {
+  // Gets the rectangle where this rectangle overlaps with another, if any
+  pub fn intersection(&self, s: &FabricPiece) -> Option<FabricPiece> {
     if !self.overlaps_with(&s) {
       return None;
     }
@@ -67,7 +67,7 @@ impl FabricSquare {
     let b = i32::max(self.y, s.y);
     let t = i32::min(self.y + self.height, s.y + s.height);
 
-    Some(FabricSquare {
+    Some(FabricPiece {
       id: -1,
       x: l,
       y: b,
@@ -78,14 +78,14 @@ impl FabricSquare {
 }
 
 #[aoc_generator(day3)]
-pub fn fabric_square_generator(input: &str) -> Vec<FabricSquare> {
-  input.lines().map(|l| FabricSquare::new(l)).collect()
+pub fn fabric_square_generator(input: &str) -> Vec<FabricPiece> {
+  input.lines().map(|l| FabricPiece::new(l)).collect()
 }
 
 #[aoc(day3, part1)]
 // If the Elves all proceed with their own plans, none of them will have enough
 // fabric. How many square inches of fabric are within two or more claims?
-pub fn day3_part1_find_overlapped_area(input: &[FabricSquare]) -> i32 {
+pub fn day3_part1_find_overlapped_area(input: &[FabricPiece]) -> i32 {
   0
 }
 
@@ -96,52 +96,52 @@ mod tests {
   #[test]
   fn claim_to_fabric_square_test1() {
     let input = "#1349 @ 724,871: 21x26";
-    let output = FabricSquare {
+    let output = FabricPiece {
       id: 1349,
       x: 724,
       y: 871,
       width: 21,
       height: 26,
     };
-    assert_eq!(FabricSquare::new(&input), output);
+    assert_eq!(FabricPiece::new(&input), output);
   }
 
   #[test]
   fn claim_to_fabric_square_test2() {
     let input = "#23 @ 771,152: 16x19";
-    let output = FabricSquare {
+    let output = FabricPiece {
       id: 23,
       x: 771,
       y: 152,
       width: 16,
       height: 19,
     };
-    assert_eq!(FabricSquare::new(&input), output);
+    assert_eq!(FabricPiece::new(&input), output);
   }
 
   #[test]
   fn claim_to_fabric_square_test3() {
     let input = "#2 @ 102,14: 23x14";
-    let output = FabricSquare {
+    let output = FabricPiece {
       id: 2,
       x: 102,
       y: 14,
       width: 23,
       height: 14,
     };
-    assert_eq!(FabricSquare::new(&input), output);
+    assert_eq!(FabricPiece::new(&input), output);
   }
 
   #[test]
   fn intersection_not_exists_test1() {
-    let s1 = FabricSquare {
+    let s1 = FabricPiece {
       id: 0,
       x: 1,
       y: 3,
       width: 4,
       height: 4,
     };
-    let s3 = FabricSquare {
+    let s3 = FabricPiece {
       id: 2,
       x: 5,
       y: 6,
@@ -153,14 +153,14 @@ mod tests {
 
   #[test]
   fn intersection_exists_test1() {
-    let s1 = FabricSquare {
+    let s1 = FabricPiece {
       id: 0,
       x: 1,
       y: 3,
       width: 4,
       height: 4,
     };
-    let s2 = FabricSquare {
+    let s2 = FabricPiece {
       id: 1,
       x: 3,
       y: 1,
@@ -197,21 +197,21 @@ mod tests {
 
   #[test]
   fn overlap_false_test1() {
-    let s1 = FabricSquare {
+    let s1 = FabricPiece {
       id: 0,
       x: 1,
       y: 3,
       width: 4,
       height: 4,
     };
-    let s2 = FabricSquare {
+    let s2 = FabricPiece {
       id: 1,
       x: 3,
       y: 1,
       width: 4,
       height: 4,
     };
-    let s3 = FabricSquare {
+    let s3 = FabricPiece {
       id: 2,
       x: 5,
       y: 5,
@@ -224,14 +224,14 @@ mod tests {
 
   #[test]
   fn overlap_true_test1() {
-    let s1 = FabricSquare {
+    let s1 = FabricPiece {
       id: 0,
       x: 1,
       y: 3,
       width: 4,
       height: 4,
     };
-    let s2 = FabricSquare {
+    let s2 = FabricPiece {
       id: 1,
       x: 3,
       y: 1,
@@ -244,7 +244,7 @@ mod tests {
   #[test]
   fn area_test1() {
     assert_eq!(
-      FabricSquare {
+      FabricPiece {
         id: 0,
         x: 0,
         y: 0,
