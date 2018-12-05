@@ -50,12 +50,43 @@ impl FabricSquare {
 
   // Determines if this square overlaps with the given square
   pub fn overlaps_with(&self, square: &FabricSquare) -> bool {
-    false
+    let x_range1 = Range {
+      start: self.x,
+      end: self.x + self.width,
+    };
+    let x_range2 = Range {
+      start: square.x,
+      end: square.x + square.width,
+    };
+    let y_range1 = Range {
+      start: self.y,
+      end: self.y + self.height,
+    };
+    let y_range2 = Range {
+      start: square.y,
+      end: square.y + square.height,
+    };
+
+    let overlaps_x = x_range1.overlaps(&x_range2) || x_range2.overlaps(&x_range1);
+    let overlaps_y = y_range1.overlaps(&y_range2) || y_range2.overlaps(&y_range1);
+
+    overlaps_x && overlaps_y
   }
 
   // Gets the square where this square overlaps with another, if any
   pub fn intersection(&self, square: &FabricSquare) -> Option<FabricSquare> {
     None
+  }
+}
+
+struct Range {
+  start: i32,
+  end: i32,
+}
+
+impl Range {
+  fn overlaps(&self, r: &Range) -> bool {
+    (self.start >= r.start && self.start <= r.end) || (r.start >= self.start && r.start <= self.end)
   }
 }
 
@@ -74,6 +105,34 @@ pub fn day3_part1_find_overlapped_area(input: &[FabricSquare]) -> i32 {
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn range_overlap_test1() {
+    let r1 = Range { start: 0, end: 1 };
+    let r2 = Range { start: 2, end: 3 };
+    assert_eq!(r1.overlaps(&r2), false);
+  }
+
+  #[test]
+  fn range_overlap_test2() {
+    let r1 = Range { start: 2, end: 3 };
+    let r2 = Range { start: 2, end: 3 };
+    assert_eq!(r1.overlaps(&r2), true);
+  }
+
+  #[test]
+  fn range_overlap_test3() {
+    let r1 = Range { start: 0, end: 3 };
+    let r2 = Range { start: 2, end: 3 };
+    assert_eq!(r1.overlaps(&r2), true);
+  }
+
+  #[test]
+  fn range_overlap_test4() {
+    let r1 = Range { start: 0, end: 3 };
+    let r2 = Range { start: 50, end: 60 };
+    assert_eq!(r1.overlaps(&r2), false);
+  }
 
   /*
     The problem is that many of the claims overlap, causing two or more claims to cover part of the same areas. For example, consider the following claims:
@@ -155,6 +214,25 @@ mod tests {
   }
 
   #[test]
+  fn overlap_false_test1() {
+    let s1 = FabricSquare {
+      id: 0,
+      x: 1,
+      y: 3,
+      width: 4,
+      height: 4,
+    };
+    let s3 = FabricSquare {
+      id: 2,
+      x: 5,
+      y: 6,
+      width: 2,
+      height: 2,
+    };
+    assert_eq!(s1.overlaps_with(&s3), false);
+  }
+
+  #[test]
   fn intersection_exists_test1() {
     let s1 = FabricSquare {
       id: 0,
@@ -175,6 +253,25 @@ mod tests {
     assert_eq!(s0.y, 3);
     assert_eq!(s0.height, 2);
     assert_eq!(s0.width, 2);
+  }
+
+  #[test]
+  fn overlap_true_test1() {
+    let s1 = FabricSquare {
+      id: 0,
+      x: 1,
+      y: 3,
+      width: 4,
+      height: 4,
+    };
+    let s2 = FabricSquare {
+      id: 1,
+      x: 3,
+      y: 1,
+      width: 4,
+      height: 2,
+    };
+    assert_eq!(s1.overlaps_with(&s2), true);
   }
 
   #[test]
