@@ -29,13 +29,17 @@ impl FabricSquare {
           .unwrap();
     }
     let cap = re.captures(claim).unwrap();
-
+    let id = cap.name("id").unwrap().as_str().parse::<i32>().unwrap();
+    let x = cap.name("x").unwrap().as_str().parse::<i32>().unwrap();
+    let y = cap.name("y").unwrap().as_str().parse::<i32>().unwrap();
+    let width = cap.name("width").unwrap().as_str().parse::<i32>().unwrap();
+    let height = cap.name("height").unwrap().as_str().parse::<i32>().unwrap();
     FabricSquare {
-      id: 0,
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
+      id: id,
+      x: x,
+      y: y,
+      width: width,
+      height: height,
     }
   }
 
