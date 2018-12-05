@@ -75,6 +75,16 @@ impl FabricPiece {
       height: t - b,
     })
   }
+
+  // Gets whether the given point is within this rectangle
+  pub fn contains(&self, p: &Point) -> bool {
+    self.x <= p.x && p.x <= self.x + self.width && self.y <= p.y && p.y <= self.y + self.height
+  }
+}
+
+pub struct Point {
+  x: i32,
+  y: i32,
 }
 
 #[aoc_generator(day3)]
@@ -149,6 +159,20 @@ mod tests {
       height: 2,
     };
     assert_eq!(s1.intersection(&s3).is_none(), true);
+  }
+
+  #[test]
+  fn contains_test1() {
+    let s1 = FabricPiece {
+      id: 0,
+      x: 1,
+      y: 3,
+      width: 4,
+      height: 4,
+    };
+    assert_eq!(s1.contains(&Point { x: 0, y: 0 }), false);
+    assert_eq!(s1.contains(&Point { x: 1, y: 3 }), true);
+    assert_eq!(s1.contains(&Point { x: 7, y: 7 }), false);
   }
 
   #[test]
