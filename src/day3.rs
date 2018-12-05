@@ -49,28 +49,37 @@ impl FabricSquare {
   }
 
   // Determines if this square overlaps with the given square
-  pub fn overlaps_with(&self, square: &FabricSquare) -> bool {
-    let x_range1 = Range {
-      start: self.x,
-      end: self.x + self.width,
-    };
-    let x_range2 = Range {
-      start: square.x,
-      end: square.x + square.width,
-    };
-    let y_range1 = Range {
-      start: self.y,
-      end: self.y + self.height,
-    };
-    let y_range2 = Range {
-      start: square.y,
-      end: square.y + square.height,
-    };
+  pub fn overlaps_with(&self, s: &FabricSquare) -> bool {
+    // let x_range1 = Range {
+    //   start: self.x,
+    //   end: self.x + self.width,
+    // };
+    // let x_range2 = Range {
+    //   start: s.x,
+    //   end: s.x + s.width,
+    // };
+    // let y_range1 = Range {
+    //   start: self.y,
+    //   end: self.y + self.height,
+    // };
+    // let y_range2 = Range {
+    //   start: s.y,
+    //   end: s.y + s.height,
+    // };
 
-    let overlaps_x = x_range1.overlaps(&x_range2) || x_range2.overlaps(&x_range1);
-    let overlaps_y = y_range1.overlaps(&y_range2) || y_range2.overlaps(&y_range1);
+    // let overlaps_x = x_range1.overlaps(&x_range2) || x_range2.overlaps(&x_range1);
+    // let overlaps_y = y_range1.overlaps(&y_range2) || y_range2.overlaps(&y_range1);
+    // overlaps_x && overlaps_y
 
-    overlaps_x && overlaps_y
+    // if self.x > s.x || s.x > self.x {
+    //   return false;
+    // }
+    // if self.y < s.y || s.y < self.y {
+    //   return false;
+    // }
+    // true
+
+    self.x < s.x + s.width && self.x + self.width > s.x && self.y > s.y + s.height && self.y < s.y
   }
 
   // Gets the square where this square overlaps with another, if any
@@ -134,27 +143,6 @@ mod tests {
     assert_eq!(r1.overlaps(&r2), false);
   }
 
-  /*
-    The problem is that many of the claims overlap, causing two or more claims to cover part of the same areas. For example, consider the following claims:
-
-    #1 @ 1,3: 4x4
-    #2 @ 3,1: 4x4
-    #3 @ 5,5: 2x2
-
-    Visually, these claim the following areas:
-
-    ........
-    ...2222.
-    ...2222.
-    .11XX22.
-    .11XX22.
-    .111133.
-    .111133.
-    ........
-
-    The four square inches marked with X are claimed by both 1 and 2. (Claim 3, while adjacent to the others, does not overlap either of them.)
-  */
-
   #[test]
   fn claim_to_fabric_square_test1() {
     let input = "#1349 @ 724,871: 21x26";
@@ -214,25 +202,6 @@ mod tests {
   }
 
   #[test]
-  fn overlap_false_test1() {
-    let s1 = FabricSquare {
-      id: 0,
-      x: 1,
-      y: 3,
-      width: 4,
-      height: 4,
-    };
-    let s3 = FabricSquare {
-      id: 2,
-      x: 5,
-      y: 6,
-      width: 2,
-      height: 2,
-    };
-    assert_eq!(s1.overlaps_with(&s3), false);
-  }
-
-  #[test]
   fn intersection_exists_test1() {
     let s1 = FabricSquare {
       id: 0,
@@ -255,6 +224,46 @@ mod tests {
     assert_eq!(s0.width, 2);
   }
 
+  /*
+    The problem is that many of the claims overlap, causing two or more claims to cover part of the same areas. For example, consider the following claims:
+
+    #1 @ 1,3: 4x4
+    #2 @ 3,1: 4x4
+    #3 @ 5,5: 2x2
+
+    Visually, these claim the following areas:
+
+    ........
+    ...2222.
+    ...2222.
+    .11XX22.
+    .11XX22.
+    .111133.
+    .111133.
+    ........
+
+    The four square inches marked with X are claimed by both 1 and 2. (Claim 3, while adjacent to the others, does not overlap either of them.)
+  */
+
+  #[test]
+  fn overlap_false_test1() {
+    let s1 = FabricSquare {
+      id: 0,
+      x: 1,
+      y: 3,
+      width: 4,
+      height: 4,
+    };
+    let s3 = FabricSquare {
+      id: 2,
+      x: 5,
+      y: 5,
+      width: 2,
+      height: 2,
+    };
+    assert_eq!(s1.overlaps_with(&s3), false);
+  }
+
   #[test]
   fn overlap_true_test1() {
     let s1 = FabricSquare {
@@ -269,7 +278,7 @@ mod tests {
       x: 3,
       y: 1,
       width: 4,
-      height: 2,
+      height: 4,
     };
     assert_eq!(s1.overlaps_with(&s2), true);
   }
