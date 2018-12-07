@@ -11,3 +11,6 @@ Cargo.lock
 
 # Temporary directories
 tmp/
+
+# OSX
+.DS_Store

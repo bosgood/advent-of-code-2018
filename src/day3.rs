@@ -11,7 +11,7 @@ use std::collections::HashMap;
 */
 // Rectangle expresses the elf's square of fabric in terms of its cartesian coordinates.
 // The origin point (0,0) is the top left point.
-#[derive(PartialEq, Eq, Debug, Hash)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone)]
 pub struct Rectangle {
   id: i32,
   x: i32,
@@ -91,6 +91,16 @@ impl Rectangle {
   }
 }
 
+impl std::fmt::Display for Rectangle {
+  fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    write!(
+      f,
+      "Rectangle {}, {}, {}, {}",
+      self.x, self.y, self.width, self.height
+    )
+  }
+}
+
 #[derive(Hash, Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Point {
   x: i32,
@@ -100,14 +110,6 @@ pub struct Point {
 #[aoc_generator(day3)]
 pub fn fabric_square_generator(input: &str) -> Vec<Rectangle> {
   input.lines().map(|l| Rectangle::new(l)).collect()
-}
-
-// Counts the number of fabric pieces overlapping at this point
-fn count_overlaps(pieces: &[Rectangle], point: Point) -> i32 {
-  pieces.iter().fold(0, |memo, p| match p.contains(&point) {
-    true => memo + 1,
-    false => memo,
-  })
 }
 
 #[aoc(day3, part1)]
@@ -146,13 +148,87 @@ pub fn day3_part1_find_overlapped_area(input: &[Rectangle]) -> i32 {
   });
 
   points_overlap.values().filter(|c| **c >= 2).count() as i32
+}
 
-  // println!(
-  //   "min_x: {}, max_x: {}, min_y: {}, max_y: {}",
-  //   min_x, max_x, min_y, max_y,
-  // );
+#[aoc(day3, part2, find_outlier)]
+pub fn day3_part2_find_outlier(input: &[Rectangle]) -> i32 {
+  if input.len() == 0 {
+    return 0;
+  }
+  if input.len() == 1 {
+    return input[0].id;
+  }
 
-  // 0
+  let mut remaining: Vec<Rectangle> = input.to_vec();
+  loop {
+    let first = remaining[0].clone();
+    remaining.remove(0);
+    let len = remaining.len();
+    remaining = remaining
+      .iter()
+      .cloned()
+      .filter(|r| !first.overlaps_with(&r))
+      .collect();
+
+    if remaining.len() == len {
+      println!("nothing filtered out, returning: {}", first);
+      return first.id;
+    }
+    println!("filtered out: {} claim", len - remaining.len());
+
+    if remaining.len() == 0 {
+      println!("returned: {}", first);
+      return first.id;
+    }
+  }
+}
+
+#[aoc(day3, part2, find_outlier2)]
+// If the Elves all proceed with their own plans, none of them will have enough
+// fabric. How many square inches of fabric are within two or more claims?
+pub fn day3_part2_find_outlier2(input: &[Rectangle]) -> i32 {
+  let mut min_x = 0;
+  let mut max_x = 0;
+  let mut min_y = 0;
+  let mut max_y = 0;
+
+  let mut point_map: HashMap<Point, i32> = HashMap::new();
+
+  // Find outer bounds of all the fabric
+  input.iter().for_each(|r| {
+    min_x = i32::min(min_x, r.x);
+    min_y = i32::min(min_y, r.y);
+    max_x = i32::max(max_x, r.x);
+    max_y = i32::max(max_y, r.y);
+
+    if min_x == 0 {
+      min_x = r.x;
+    }
+    if min_y == 0 {
+      min_y = r.y;
+    }
+
+    let points = r.points();
+    points.iter().for_each(|p| {
+      let count = match point_map.get(&p) {
+        Some(c) => c + 1,
+        None => 1,
+      };
+      point_map.insert(*p, count);
+    })
+  });
+
+  for r in input {
+    let points = r.points();
+    if !points.iter().any(|p| {
+      let val = point_map.get(p).unwrap();
+      val > &1
+    }) {
+      return r.id;
+    }
+  }
+
+  -1
 }
 
 #[cfg(test)]
@@ -373,6 +449,26 @@ mod tests {
     let output = 4;
     assert_eq!(
       day3_part1_find_overlapped_area(&fabric_square_generator(&input)),
+      output
+    );
+  }
+
+  #[test]
+  fn part2_integration_test() {
+    let input = "#1 @ 1,3: 4x4\n#2 @ 3,1: 4x4\n#3 @ 5,5: 2x2";
+    let output = 3;
+    assert_eq!(
+      day3_part2_find_outlier(&fabric_square_generator(&input)),
+      output
+    );
+  }
+
+  #[test]
+  fn part2_integration_test2() {
+    let input = "#1 @ 1,3: 4x4\n#2 @ 3,1: 4x4\n#3 @ 5,5: 2x2";
+    let output = 3;
+    assert_eq!(
+      day3_part2_find_outlier2(&fabric_square_generator(&input)),
       output
     );
   }
