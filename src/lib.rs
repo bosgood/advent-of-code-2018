@@ -2,6 +2,7 @@
 extern crate lazy_static;
 
 extern crate aoc_runner;
+extern crate chrono;
 extern crate im;
 extern crate regex;
 
