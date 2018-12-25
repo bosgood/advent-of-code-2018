@@ -1,8 +1,10 @@
+use std::collections::HashMap;
 use std::num::ParseIntError;
 use std::str::FromStr;
 
 use chrono::DateTime;
 use chrono::Duration;
+use chrono::Timelike;
 use chrono::Utc;
 use regex::Regex;
 
@@ -168,8 +170,55 @@ pub fn generate_timeline(all_events: &[Event]) -> Vec<GuardState> {
 }
 
 #[aoc(day4, part1)]
-pub fn day4_part1(input: &[Event]) -> i32 {
-    0
+pub fn day4_part1(input: &[Event]) -> u32 {
+    let timeline = generate_timeline(input);
+
+    let mut guard_sleep_amounts: HashMap<i32, u32> = HashMap::new();
+    for state in &timeline {
+        if state.asleep {
+            // Tally this minute for the guard on duty then
+            if guard_sleep_amounts.contains_key(&state.guard_id) {
+                let c = guard_sleep_amounts[&state.guard_id];
+                guard_sleep_amounts.insert(state.guard_id, c + 1);
+            } else {
+                guard_sleep_amounts.insert(state.guard_id, 1);
+            }
+        }
+    }
+
+    let mut guard_id: u32 = 0;
+    let mut highest = 0;
+    for pair in guard_sleep_amounts {
+        if pair.1 > highest {
+            guard_id = pair.0 as u32;
+            highest = pair.1;
+        }
+    }
+
+    let mut asleep_minutes: HashMap<u32, u32> = HashMap::new();
+    for state in timeline {
+        // Tally this minute as having had a guard asleep on duty
+        if state.asleep && state.guard_id == guard_id as i32 {
+            let minute = state.timestamp.time().minute();
+            if asleep_minutes.contains_key(&minute) {
+                let m = asleep_minutes[&minute];
+                asleep_minutes.insert(minute, m + 1);
+            } else {
+                asleep_minutes.insert(minute, 1);
+            }
+        }
+    }
+
+    let mut minute: u32 = 0;
+    highest = 0;
+    for pair in asleep_minutes {
+        if pair.1 > highest {
+            minute = pair.0;
+            highest = pair.1;
+        }
+    }
+
+    guard_id * minute
 }
 
 #[cfg(test)]
@@ -231,54 +280,245 @@ mod tests {
         let events = event_generator("[1518-11-23 00:04] falls asleep\n[1518-11-22 23:54] Guard #1237 begins shift\n[1518-11-23 00:40] wakes up");
         let timeline = generate_timeline(&events);
         assert_eq!(timeline.len(), 47);
-        assert_eq!(timeline, vec![
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-22T23:54:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-22T23:55:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-22T23:56:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-22T23:57:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-22T23:58:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-22T23:59:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-23T00:00:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-23T00:01:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-23T00:02:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-23T00:03:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:04:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:05:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:06:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:07:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:08:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:09:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:10:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:11:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:12:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:13:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:14:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:15:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:16:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:17:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:18:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:19:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:20:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:21:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:22:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:23:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:24:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:25:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:26:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:27:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:28:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:29:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:30:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:31:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:32:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:33:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:34:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:35:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:36:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:37:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:38:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: true, timestamp: "1518-11-23T00:39:00Z".parse::<DateTime<Utc>>().unwrap() },
-            GuardState { guard_id: 1237, asleep: false, timestamp: "1518-11-23T00:40:00Z".parse::<DateTime<Utc>>().unwrap() },
-        ]);
+        assert_eq!(
+            timeline,
+            vec![
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-22T23:54:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-22T23:55:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-22T23:56:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-22T23:57:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-22T23:58:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-22T23:59:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-23T00:00:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-23T00:01:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-23T00:02:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-23T00:03:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:04:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:05:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:06:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:07:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:08:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:09:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:10:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:11:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:12:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:13:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:14:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:15:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:16:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:17:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:18:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:19:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:20:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:21:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:22:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:23:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:24:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:25:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:26:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:27:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:28:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:29:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:30:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:31:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:32:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:33:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:34:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:35:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:36:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:37:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:38:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: true,
+                    timestamp: "1518-11-23T00:39:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+                GuardState {
+                    guard_id: 1237,
+                    asleep: false,
+                    timestamp: "1518-11-23T00:40:00Z".parse::<DateTime<Utc>>().unwrap()
+                },
+            ]
+        );
     }
 }
