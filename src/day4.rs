@@ -221,6 +221,39 @@ pub fn day4_part1(input: &[Event]) -> u32 {
     guard_id * minute
 }
 
+#[aoc(day4, part2)]
+pub fn day4_part2(input: &[Event]) -> u32 {
+    let timeline = generate_timeline(input);
+
+    // (guard_id, minute), asleep count
+    let mut guard_sleep_records: HashMap<(i32, u32), u32> = HashMap::new();
+    for state in &timeline {
+        let minute = state.timestamp.time().minute();
+        if state.asleep {
+            // Tally this minute for the guard on duty then
+            if guard_sleep_records.contains_key(&(state.guard_id, minute)) {
+                let c = guard_sleep_records[&(state.guard_id, minute)];
+                guard_sleep_records.insert((state.guard_id, minute), c + 1);
+            } else {
+                guard_sleep_records.insert((state.guard_id, minute), 1);
+            }
+        }
+    }
+
+    let mut guard_id: i32 = 0;
+    let mut minute: u32 = 0;
+    let mut highest: u32 = 0;
+    for (pair, v) in guard_sleep_records {
+        if v > highest {
+            guard_id = pair.0;
+            minute = pair.1;
+            highest = v;
+        }
+    }
+
+    guard_id as u32 * minute
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
