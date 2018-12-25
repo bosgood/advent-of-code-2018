@@ -13,15 +13,15 @@ fn polymer_destruction(p: &str) -> (String, bool) {
     let chars: Vec<char> = p.chars().collect();
     let l = p.len();
     for i in 0..l {
-        if i == l {
+        if i == l - 1 {
             break;
         }
         let e1 = chars[i];
         let e2 = chars[i + 1];
         if reacts(&e1, &e2) {
-            let prefix = chars[0..i - 1];
-            let suffix = chars[i + 2..l-1];
-            String::from(prefix+suffix);
+            let prefix: String = chars[0..i - 1].into_iter().collect();
+            let suffix: String = chars[i + 2..l - 1].into_iter().collect();
+            return ([prefix, suffix].concat(), true);
         }
     }
 
@@ -47,19 +47,28 @@ mod tests {
     // dabCBAcCcaDA      Either 'cC' or 'Cc' are removed (the result is the same).
     // dabCBAcaDA        No further actions can be taken.
     #[test]
-    fn test_polymer_destruction() {
+    fn test_polymer_destruction_1() {
         assert_eq!(
             polymer_destruction("dabAcCaCBAcCcaDA"),
             (String::from("dabAaCBAcCcaDA"), true),
         );
+    }
+    #[test]
+    fn test_polymer_destruction_2() {
         assert_eq!(
             polymer_destruction("dabAaCBAcCcaDA"),
             (String::from("dabCBAcCcaDA"), true),
         );
+    }
+    #[test]
+    fn test_polymer_destruction_3() {
         assert_eq!(
             polymer_destruction("dabCBAcCcaDA"),
             (String::from("dabCBAcaDA"), true),
         );
+    }
+    #[test]
+    fn test_polymer_destruction_4() {
         assert_eq!(
             polymer_destruction("dabCBAcaDA"),
             (String::from("dabCBAcaDA"), false),
