@@ -33,13 +33,17 @@ fn reacts(c1: &char, c2: &char) -> bool {
     c1 != c2 && c1.to_ascii_lowercase() == c2.to_ascii_lowercase()
 }
 
-#[aoc(day5, part1)]
-pub fn day5_part1(input: &str) -> String {
+pub fn polymer_reaction(input: &str) -> String {
     let mut reaction = polymer_destruction(input);
     while reaction.1 {
         reaction = polymer_destruction(&reaction.0);
     }
     reaction.0
+}
+
+#[aoc(day5, part1)]
+pub fn day5_part1(input: &str) -> usize {
+    polymer_reaction(&input).len()
 }
 
 #[cfg(test)]
