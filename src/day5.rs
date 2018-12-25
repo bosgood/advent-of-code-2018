@@ -1,7 +1,4 @@
-// #[aoc_generator(day5)]
-// pub fn generator(input: &str) -> String {
-
-// }
+use std::collections::HashMap;
 
 // Reacts on the given polymer chain and returns the most immediate result,
 // and whether a result was necessary
@@ -46,6 +43,31 @@ pub fn day5_part1(input: &str) -> usize {
     polymer_reaction(&input).len()
 }
 
+#[aoc(day5, part2)]
+pub fn day5_part2(input: &str) -> String {
+    let alphabet: Vec<char> = "abcdefghijklmnopqrstuvwxyz".chars().collect();
+    let mut results: HashMap<char, String> = HashMap::new();
+    for letter in alphabet {
+        let mut without_unit_type = String::from("");
+        for c in input.chars() {
+            if c.to_ascii_lowercase() != letter {
+                without_unit_type.push(c);
+            }
+        }
+        let reacted = polymer_reaction(&without_unit_type);
+        println!("removing unit type: {}, count: {}", letter, reacted.len());
+        results.insert(letter, reacted);
+    }
+    let mut best = ('_', String::from(""));
+    for (k, v) in results {
+        let l = best.1.len();
+        if l == 0 || v.len() <= l {
+            best = (k, v);
+        }
+    }
+    format!("{}-{}", best.0, best.1)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -84,8 +106,13 @@ mod tests {
     }
 
     #[test]
+    fn test_polymer_reaction() {
+        assert_eq!(polymer_reaction("dabAcCaCBAcCcaDA"), "dabCBAcaDA");
+    }
+
+    #[test]
     fn test_day5_part1() {
-        assert_eq!(day5_part1("dabAcCaCBAcCcaDA"), "dabCBAcaDA");
+        assert_eq!(day5_part1("dabAcCaCBAcCcaDA"), 10);
     }
 
     #[test]
@@ -94,5 +121,16 @@ mod tests {
         assert_eq!(reacts(&'B', &'b'), true);
         assert_eq!(reacts(&'B', &'B'), false);
         assert_eq!(reacts(&'a', &'a'), false);
+    }
+
+    #[test]
+    fn test_day5_part2() {
+        // Input: dabAcCaCBAcCcaDA
+        // Removing all A/a units produces dbcCCBcCcD. Fully reacting this polymer produces dbCBcD, which has length 6.
+        // Removing all B/b units produces daAcCaCAcCcaDA. Fully reacting this polymer produces daCAcaDA, which has length 8.
+        // Removing all C/c units produces dabAaBAaDA. Fully reacting this polymer produces daDA, which has length 4.
+        // Removing all D/d units produces abAcCaCBAcCcaA. Fully reacting this polymer produces abCBAc, which has length 6.
+        // In this example, removing all C/c units was best, producing the answer 4.
+        assert_eq!(day5_part2("dabAcCaCBAcCcaDA"), String::from("c-daDA"));
     }
 }
