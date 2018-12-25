@@ -12,15 +12,15 @@ fn polymer_destruction(p: &str) -> (String, bool) {
 
     let chars: Vec<char> = p.chars().collect();
     let l = p.len();
-    for i in 0..l {
-        if i == l - 1 {
-            break;
-        }
+    for i in 0..l - 1 {
+        println!("index {}, char {}", i, chars[i]);
         let e1 = chars[i];
         let e2 = chars[i + 1];
         if reacts(&e1, &e2) {
-            let prefix: String = chars[0..i - 1].into_iter().collect();
-            let suffix: String = chars[i + 2..l - 1].into_iter().collect();
+            println!("found reaction: {}{}", e1, e2);
+            let prefix: String = chars[0..i].into_iter().collect();
+            let suffix: String = chars[i + 2..l].into_iter().collect();
+            println!("prefix: {}, suffix: {}", prefix, suffix);
             return ([prefix, suffix].concat(), true);
         }
     }
@@ -35,7 +35,11 @@ fn reacts(c1: &char, c2: &char) -> bool {
 
 #[aoc(day5, part1)]
 pub fn day5_part1(input: &str) -> String {
-    String::from("")
+    let mut reaction = polymer_destruction(input);
+    while reaction.1 {
+        reaction = polymer_destruction(&reaction.0);
+    }
+    reaction.0
 }
 
 #[cfg(test)]
